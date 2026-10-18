@@ -1,0 +1,14 @@
+# ===== 敏感配置（含腾讯云密钥，严禁入库）=====
+backend/src/main/resources/application-local.yml
+
+# ===== 构建产物 =====
+backend/target/
+
+# ===== IDE / 系统 / 工具 =====
+.idea/
+.trae/
+.DS_Store
+node_modules/
+
+# ===== 日志 =====
+*.log

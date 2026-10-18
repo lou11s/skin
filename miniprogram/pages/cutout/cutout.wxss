@@ -1,0 +1,170 @@
+/* 我的抠图：与「我的作品」同一套视觉语言（灰底 + 白卡 + 柔和阴影） */
+.page {
+  min-height: 100vh;
+  background: #f5f5f7;
+  padding: 20rpx 0 60rpx;
+  box-sizing: border-box;
+}
+
+.card {
+  margin: 20rpx 24rpx 0;
+  padding: 28rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+/* ---------- 未登录引导 ---------- */
+.login-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 140rpx 60rpx;
+}
+.login-txt {
+  font-size: 28rpx;
+  color: #8e8e93;
+}
+.login-btn {
+  margin-top: 32rpx;
+  width: 320rpx;
+  height: 84rpx;
+  line-height: 84rpx;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 28rpx;
+  border-radius: 100rpx;
+}
+.login-btn::after {
+  border: none;
+}
+
+/* ---------- 操作卡：两个入口 ---------- */
+.ops {
+  display: flex;
+}
+.op {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 0 26rpx;
+  background: #fafafa;
+  border: 2rpx solid #ececef;
+  border-radius: 20rpx;
+  box-sizing: border-box;
+}
+.op + .op {
+  margin-left: 20rpx;
+}
+.op.disabled {
+  opacity: 0.5;
+}
+.op-icon {
+  font-size: 48rpx;
+  line-height: 1.2;
+}
+.op-name {
+  margin-top: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.op-desc {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #8e8e93;
+}
+.op-note {
+  margin-top: 18rpx;
+  font-size: 22rpx;
+  color: #b0b0b5;
+}
+
+/* ---------- 素材列表 ---------- */
+.list-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.list-title {
+  flex: 1;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.list-count {
+  font-size: 23rpx;
+  color: #8e8e93;
+}
+.loading {
+  padding: 80rpx 0;
+  text-align: center;
+  font-size: 25rpx;
+  color: #8e8e93;
+}
+.empty {
+  padding: 90rpx 0 70rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.empty-plus {
+  font-size: 72rpx;
+  line-height: 1;
+}
+.empty-txt {
+  margin-top: 20rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #3a3a3c;
+}
+.empty-sub {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  color: #8e8e93;
+}
+
+/* 网格：每行 3 个 */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.cell {
+  position: relative;
+  width: 31%;
+  height: 200rpx;
+  margin-bottom: 20rpx;
+  border: 2rpx solid #ececef;
+  border-radius: 18rpx;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+/* 占位：末行不足 3 个时补位，保证素材靠左对齐（高度 0 不可见） */
+.ph {
+  width: 31%;
+  height: 0;
+}
+.cell-img {
+  width: 100%;
+  height: 100%;
+}
+.cell-tag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 4rpx 0;
+  text-align: center;
+  font-size: 20rpx;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.45);
+}
+.grid-hint {
+  padding-top: 4rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #b0b0b5;
+}

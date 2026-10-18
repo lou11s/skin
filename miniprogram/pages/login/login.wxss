@@ -1,0 +1,38 @@
+.page {
+  padding: 180rpx 64rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero {
+  font-size: 140rpx;
+  line-height: 1;
+}
+
+.title {
+  margin-top: 48rpx;
+  font-size: 42rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  text-align: center;
+}
+
+.desc {
+  margin-top: 24rpx;
+  font-size: 28rpx;
+  color: #8e8e93;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.login-btn {
+  margin-top: 96rpx;
+  width: 100%;
+}
+
+.guest-tip {
+  margin-top: 32rpx;
+  font-size: 24rpx;
+  color: #d8d8d8;
+}

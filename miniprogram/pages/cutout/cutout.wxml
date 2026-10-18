@@ -1,0 +1,56 @@
+<view class="page">
+  <!-- 未登录：引导登录 -->
+  <view class="login-tip" wx:if="{{!loggedIn}}">
+    <view class="login-txt">登录后即可管理你的抠图素材</view>
+    <button class="login-btn" bindtap="goLogin">去登录</button>
+  </view>
+
+  <block wx:else>
+    <!-- 操作卡：两个入口 -->
+    <view class="card ops-card">
+      <view class="ops">
+        <view class="op {{uploading ? 'disabled' : ''}}" bindtap="cutoutNew">
+          <view class="op-icon">✂️</view>
+          <view class="op-name">抠图</view>
+          <view class="op-desc">选照片，自动抠出主体</view>
+        </view>
+        <view class="op {{uploading ? 'disabled' : ''}}" bindtap="uploadPlain">
+          <view class="op-icon">🖼️</view>
+          <view class="op-name">上传抠图</view>
+          <view class="op-desc">透明背景 PNG 免抠直存</view>
+        </view>
+      </view>
+      <view class="op-note">素材保存在云端，创作时可在「＋ 抠图素材」中反复选用</view>
+    </view>
+
+    <!-- 素材列表 -->
+    <view class="card">
+      <view class="list-head">
+        <view class="list-title">全部素材</view>
+        <view class="list-count" wx:if="{{cutouts && cutouts.length}}">{{cutouts.length}} 张</view>
+      </view>
+
+      <view class="loading" wx:if="{{loading && (!cutouts || !cutouts.length)}}">素材加载中...</view>
+
+      <view class="empty" wx:elif="{{!cutouts || !cutouts.length}}">
+        <view class="empty-plus">✂️</view>
+        <view class="empty-txt">还没有抠图素材</view>
+        <view class="empty-sub">点上方「抠图」或「上传抠图」添加第一张</view>
+      </view>
+
+      <block wx:else>
+        <view class="grid">
+          <view class="cell checkerboard" wx:for="{{cutouts}}" wx:key="id"
+                data-id="{{item.id}}" bindtap="previewCutout" bindlongpress="removeCutout">
+            <image class="cell-img" src="{{item.url}}" mode="aspectFit" lazy-load="{{true}}" />
+            <view class="cell-tag">{{item.type === 'product' ? '物品' : (item.type === 'plain' ? '免抠' : '人像')}}</view>
+          </view>
+          <!-- 占位：末行不足 3 个时保证靠左对齐 -->
+          <view class="ph"></view>
+          <view class="ph"></view>
+        </view>
+        <view class="grid-hint">点击预览 · 长按删除</view>
+      </block>
+    </view>
+  </block>
+</view>

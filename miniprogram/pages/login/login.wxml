@@ -1,0 +1,10 @@
+<view class="page">
+  <view class="hero">🚗</view>
+  <view class="title">把图片变成特斯拉专属车贴</view>
+  <view class="desc">上传任意图片，按车型一键裁剪成专属皮肤贴纸，还能分享给其他车友下载</view>
+
+  <button class="btn-primary login-btn" bindtap="login" loading="{{loading}}" disabled="{{loading}}">
+    微信一键登录
+  </button>
+  <view class="guest-tip">游客也可以浏览广场作品</view>
+</view>

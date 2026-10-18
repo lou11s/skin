@@ -1,0 +1,214 @@
+<view class="page {{adjusting ? 'page-adj' : ''}}">
+  <!-- 顶部导航：tab 页无原生返回，自绘返回 + 标题 + 修改态取消 -->
+  <view class="nav" style="padding-top:{{statusBarHeight}}px">
+    <view class="nav-back" bindtap="goBack">‹</view>
+    <view class="nav-title">创作皮肤</view>
+    <view class="nav-act" wx:if="{{editMode}}" catchtap="cancelEdit">取消修改</view>
+    <view class="nav-act nav-act-ph" wx:else></view>
+  </view>
+
+  <!-- 修改模式提示条：直接修改覆盖原作品 / 副本修改另存新作品 -->
+  <view class="edit-tip" wx:if="{{editMode}}">
+    <text class="edit-tip-dot"></text>
+    <text class="edit-tip-txt">
+      {{editMode === 'edit' ? '正在修改原作品，保存后将覆盖原图' : '副本修改中，保存后将生成一个新作品'}}
+    </text>
+  </view>
+
+  <!-- 第 1 步：选车型 -->
+  <view class="card">
+    <view class="card-head">
+      <view class="step-no">1</view>
+      <view class="step-name">选择车型</view>
+      <view class="step-side">{{selectedModelName || '未选择'}}</view>
+    </view>
+    <view class="loading" wx:if="{{loading}}">加载中...</view>
+    <view class="empty" wx:if="{{loadError}}">{{loadError}}</view>
+    <scroll-view class="model-strip" scroll-x enable-flex wx:if="{{!loading && !loadError && models.length}}">
+      <view class="model-chip {{selectedModelId === item.id ? 'on' : ''}}"
+            wx:for="{{models}}" wx:key="id"
+            bindtap="switchModel" data-id="{{item.id}}">{{item.name}}</view>
+    </scroll-view>
+    <view class="empty" wx:if="{{!loading && !loadError && !models.length}}">暂无车型数据</view>
+  </view>
+
+  <!-- ==================== 裁剪模式：逐面配图 ==================== -->
+  <block wx:if="{{mode === 'crop'}}">
+    <!-- 第 2 步：逐面配图（抠图素材改为在「我的抠图」页维护，配图时点「＋ 抠图素材」选用） -->
+    <view class="card">
+      <view class="card-head">
+        <view class="step-no">2</view>
+        <view class="step-name">逐面配图</view>
+        <view class="step-side" wx:if="{{faces.length}}">{{filledCount}}/{{faces.length}} 已完成</view>
+      </view>
+      <view class="progress" wx:if="{{faces.length}}">
+        <view class="progress-in" style="width:{{filledCount * 100 / faces.length}}%"></view>
+      </view>
+
+      <view class="loading" wx:if="{{facesLoading}}">刀版分析中...</view>
+
+      <block wx:if="{{!facesLoading && faces.length}}">
+        <!-- 整车图：点击车身上的面直接选中制作（红框为当前编辑的面） -->
+        <view class="overview-box checkerboard">
+          <canvas type="2d" id="overviewCanvas" class="overview-canvas"
+                  bindtouchstart="onOverviewTouchStart" bindtouchend="onOverviewTouchEnd"></canvas>
+          <view class="overview-toggle {{previewMode ? 'on' : ''}}" catchtap="togglePreview">
+            {{previewMode ? '退出预览' : '整体预览'}}
+          </view>
+        </view>
+        <view class="legend">
+          {{previewMode ? '已配图的面显示实际效果，未设置的面为灰色轮廓' : '点击车身上的任意面即可开始制作 · 红框为当前编辑的面'}}
+        </view>
+
+        <!-- 当前面编辑器 -->
+        <view class="face-editor checkerboard">
+          <canvas type="2d" id="faceCanvas" class="face-canvas" disable-scroll="{{true}}"
+                  bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd"></canvas>
+          <view class="editor-hint" wx:if="{{activeFace >= 0 && faces[activeFace]}}">
+            {{faces[activeFace].name}}{{facePhotos[activeFace] ? (adjusting ? ' · 单指拖动 · 双指缩放旋转' : ' · 点「调整图片」可移动缩放旋转') : ' · 点下方按钮选图'}}
+          </view>
+        </view>
+
+        <!-- 图层条：当前面所有图层，点击选中并置顶，长按删除，＋ 继续添加 -->
+        <view class="layer-wrap" wx:if="{{activeFace >= 0 && layerThumbs.length}}">
+          <scroll-view class="layer-bar" scroll-x>
+            <view class="layer-chip {{activeLayerIdx === index ? 'active' : ''}}"
+                  wx:for="{{layerThumbs}}" wx:key="*this"
+                  data-index="{{index}}" bindtap="selectLayer" bindlongpress="removeLayer">
+              <image class="layer-thumb" src="{{item}}" mode="aspectFill" />
+            </view>
+            <view class="layer-chip layer-add" bindtap="chooseFacePhoto">＋</view>
+          </scroll-view>
+          <view class="layer-hint">点击缩略图选中并置顶 · 长按删除图层 · ＋ 添加照片</view>
+        </view>
+
+        <!-- 编辑器操作区：选照片 / 从抠图库选素材 / 对当前层智能抠图 -->
+        <view class="tool-row">
+          <view class="tool-btn" bindtap="chooseFacePhoto">{{facePhotos[activeFace] ? '＋ 添加照片' : '＋ 选择照片'}}</view>
+          <view class="tool-btn" bindtap="openCutoutPicker">＋ 抠图素材</view>
+          <view class="tool-btn" wx:if="{{facePhotos[activeFace] && activeLayerIdx >= 0}}" bindtap="smartCutout">智能抠图</view>
+        </view>
+
+        <!-- 调整模式开关：打开后画布手势（拖动/缩放/旋转）才生效 -->
+        <view class="adjust-toggle {{adjusting ? 'on' : ''}}"
+              wx:if="{{facePhotos[activeFace]}}" bindtap="toggleAdjust">
+          {{adjusting ? '✓ 完成调整' : '⤢ 调整图片'}}
+        </view>
+
+        <!-- 旋转控制：仅调整模式显示；常用角度一键旋转 + 任意角度输入 -->
+        <view class="adjust-panel" wx:if="{{adjusting && facePhotos[activeFace]}}">
+          <view class="adjust-row">
+            <view class="adjust-btn" data-deg="-90" bindtap="rotateLayer90">↺ 左转90°</view>
+            <view class="adjust-btn" data-deg="90" bindtap="rotateLayer90">右转90° ↻</view>
+            <view class="adjust-btn" data-deg="180" bindtap="rotateLayer90">转180°</view>
+          </view>
+          <view class="adjust-row">
+            <input class="adjust-input" type="number" value="{{rotDeg}}" placeholder="角度，如 45"
+                   cursor-spacing="160" adjust-position="{{true}}"
+                   bindinput="onRotInput" bindconfirm="applyRotDeg" />
+            <view class="adjust-btn adjust-go" bindtap="applyRotDeg">旋转</view>
+          </view>
+          <view class="adjust-tip">正在调整选中图层 · 单指拖动 · 双指缩放旋转</view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 背景填充：为当前面铺底色；未配照片的面同样适用（纯色面也计入完成） -->
+    <view class="card" wx:if="{{!facesLoading && activeFace >= 0 && faces[activeFace]}}">
+      <view class="card-head">
+        <view class="step-name">背景填充</view>
+        <view class="head-link" bindtap="applyBgToAll">应用到全部面</view>
+      </view>
+      <view class="bg-cur-row">
+        <text class="bg-cur-label">当前面底色</text>
+        <view class="bg-cur-dot" style="background:{{activeBg || '#ededf0'}}"></view>
+        <text class="bg-cur-val">{{activeBg || '未填充'}}</text>
+      </view>
+      <view class="swatch-row">
+        <view class="swatch {{item ? '' : 'swatch-none'}} {{activeBg === item ? 'active' : ''}}"
+              wx:for="{{bgSwatches}}" wx:key="index"
+              style="background:{{item}}"
+              data-color="{{item}}" bindtap="pickBgSwatch">
+          <text class="swatch-none-txt" wx:if="{{!item}}">无</text>
+        </view>
+      </view>
+      <!-- 色相 / 饱和度 / 明度三条滑条，覆盖全部颜色 -->
+      <view class="color-bar hue-bar" id="hueBar" data-bar="h"
+            catchtouchstart="onBarTouch" catchtouchmove="onBarTouch"
+            bindtouchend="onBarTouchEnd"></view>
+      <view class="color-bar" id="satBar" data-bar="s" style="{{satBarStyle}}"
+            catchtouchstart="onBarTouch" catchtouchmove="onBarTouch"
+            bindtouchend="onBarTouchEnd"></view>
+      <view class="color-bar" id="valBar" data-bar="v" style="{{valBarStyle}}"
+            catchtouchstart="onBarTouch" catchtouchmove="onBarTouch"
+            bindtouchend="onBarTouchEnd"></view>
+      <!-- 颜色代码：# 可省略，支持 3 位或 6 位 hex，清空后应用 = 取消填充 -->
+      <view class="bg-code-row">
+        <input class="bg-code-input" placeholder="颜色代码，如 #FF5500"
+               value="{{bgCode}}" confirm-type="done"
+               bindinput="onBgCodeInput" bindconfirm="applyBgCode" bindblur="applyBgCode" />
+        <view class="bg-code-apply" bindtap="applyBgCode">应用</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 标题 -->
+  <view class="card">
+    <view class="card-head">
+      <view class="step-no">3</view>
+      <view class="step-name">命名作品</view>
+      <view class="step-side">{{title.length}}/60</view>
+    </view>
+    <view class="title-box">
+      <input class="title-input" placeholder="例如：暗夜流光" placeholder-class="title-ph" maxlength="60"
+             value="{{title}}" bindinput="onTitleInput" />
+    </view>
+  </view>
+
+  <!-- 底部常驻保存栏：调整模式沉浸编辑时隐藏，避免遮挡编辑器与旋转面板 -->
+  <view class="bottom-bar" wx:if="{{!adjusting}}">
+    <view class="bb-info">
+      <block wx:if="{{!title}}">给作品起个名字</block>
+      <block wx:elif="{{!allFacesFilled}}">还有 {{faces.length - filledCount}} 个面未配图</block>
+      <block wx:else>全部就绪，可以保存</block>
+    </view>
+    <button class="bb-btn"
+            disabled="{{publishing || !title || !allFacesFilled}}"
+            bindtap="publish">
+      {{publishing ? '保存中...' : '保存作品'}}
+    </button>
+  </view>
+
+  <!-- 抠图素材选择弹层：显示已有抠图，点击添加到当前面 -->
+  <view class="pick-mask" wx:if="{{cutoutPickerVisible}}" bindtap="closeCutoutPicker"></view>
+  <view class="pick-sheet" wx:if="{{cutoutPickerVisible}}">
+    <view class="pick-head">
+      <view class="pick-title">选择抠图素材</view>
+      <view class="pick-close" bindtap="closeCutoutPicker">✕</view>
+    </view>
+    <view class="loading" wx:if="{{cutoutsLoading && (!cutouts || !cutouts.length)}}">素材加载中...</view>
+    <view class="pick-empty" wx:elif="{{!cutouts || !cutouts.length}}" bindtap="goCutoutTab">
+      <view class="pick-empty-txt">还没有抠图素材</view>
+      <view class="pick-empty-sub">去「我的抠图」添加，此处点击即可前往</view>
+    </view>
+    <scroll-view scroll-y class="pick-body" wx:else>
+      <view class="cut-grid">
+        <view class="cut-cell checkerboard" wx:for="{{cutouts}}" wx:key="id"
+              data-id="{{item.id}}" bindtap="useCutout" bindlongpress="removeCutout">
+          <image class="cut-img" src="{{item.url}}" mode="aspectFit" lazy-load="{{true}}" />
+          <view class="cut-tag">{{item.type === 'product' ? '物品' : (item.type === 'plain' ? '免抠' : '人像')}}</view>
+        </view>
+        <!-- 占位：末行不足 3 个时保证靠左对齐 -->
+        <view class="cut-ph"></view>
+        <view class="cut-ph"></view>
+      </view>
+    </scroll-view>
+    <view class="pick-foot" wx:if="{{cutouts && cutouts.length}}">点击素材添加到当前面 · 长按删除</view>
+  </view>
+
+  <!-- 离屏合成画布 -->
+  <view class="offscreen">
+    <canvas type="2d" id="composeCanvas" style="width: 1024px; height: 1024px;"></canvas>
+    <canvas type="2d" id="workCanvas" style="width: 512px; height: 512px;"></canvas>
+  </view>
+</view>

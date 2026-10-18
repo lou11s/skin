@@ -1,0 +1,35 @@
+<view class="page">
+  <!-- 按车型分组的作品网格 -->
+  <view class="group-card" wx:for="{{groups}}" wx:key="name">
+    <view class="group-head">
+      <view class="group-name">{{item.name}}</view>
+      <view class="group-count">{{item.count}} 个作品</view>
+    </view>
+    <view class="skin-grid">
+      <view class="skin-card" wx:for="{{item.list}}" wx:for-item="skin" wx:key="id"
+            bindlongpress="deleteSkin" data-id="{{skin.id}}">
+        <view class="skin-thumb checkerboard">
+          <image class="skin-img" src="{{skin.skinUrl}}" mode="aspectFit" lazy-load />
+        </view>
+        <view class="skin-title">{{skin.title}}</view>
+        <view class="skin-ops">
+          <text class="op-btn" catchtap="editSkin" data-id="{{skin.id}}">修改</text>
+          <text class="op-btn op-copy" catchtap="editSkinCopy" data-id="{{skin.id}}">复制修改</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="tip" wx:if="{{groups.length && page < pages}}">上拉加载更多</view>
+
+  <!-- 空态 -->
+  <view class="empty" wx:if="{{!groups.length}}">
+    <view class="empty-icon">🎨</view>
+    <view>{{loggedIn ? '还没有作品，创作第一个吧' : '登录后开始创作'}}</view>
+  </view>
+
+  <!-- 开始创作：作品列表页的主入口按钮 -->
+  <view class="start-create">
+    <button class="btn-primary start-create-btn" bindtap="goCreate">＋ 开始创作</button>
+  </view>
+</view>

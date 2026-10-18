@@ -1,0 +1,28 @@
+{
+  "pages": [
+    "pages/mine/mine",
+    "pages/cutout/cutout",
+    "pages/create/create",
+    "pages/login/login"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "特斯拉皮肤",
+    "backgroundColor": "#ffffff",
+    "backgroundColorTop": "#ffffff",
+    "backgroundColorBottom": "#ffffff"
+  },
+  "tabBar": {
+    "color": "#8e8e93",
+    "selectedColor": "#1a1a1a",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/mine/mine", "text": "我的作品" },
+      { "pagePath": "pages/cutout/cutout", "text": "我的抠图" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
